@@ -1,0 +1,157 @@
+# Unitree R1-A7 + Dex1 inference control over LowCmd and four-camera stream.
+# Real interface follows the R1-A7 arm and Dex1 controller motor layout:
+#   arms (motors 15..28), waist yaw (13), head (pitch=29/yaw=30), Dex1 (31/33).
+#   固定基座上半身：无升降、无底盘/floating base 移动。
+urdf_path: ../../assets/r1_a7/A7.urdf
+# A7 是固定基座上半身(根 pelvis_link)，无移动底盘，不需要 floating base。
+floating_base: false
+
+# ==== 实机接口 ====
+hardware_interface: r1_a7_dds
+r1a7_lowcmd_topic: rt/lowcmd
+r1a7_lowstate_topic: rt/lowstate
+r1a7_internal_gripper_lowcmd: true
+r1a7_left_gripper_motor_index: 31
+r1a7_right_gripper_motor_index: 33
+r1a7_waist_yaw_joint: waist_yaw_joint   # 控制腰yaw(电机13)；置空则锁定不动
+r1a7_left_gripper_cmd_topic: rt/dex1/left/cmd
+r1a7_right_gripper_cmd_topic: rt/dex1/right/cmd
+r1a7_left_gripper_state_topic: rt/dex1/left/state
+r1a7_right_gripper_state_topic: rt/dex1/right/state
+# 夹爪电机行程 0(闭合)..5.0(张开)；URDF 关节 0..0.0245m。
+# 5.0 对齐参考实现 DEX1_REAL_OPEN：实测开到限位是 左5.498/右5.333，tau 饱和于 6.93，
+# 给到 5.4 会把右爪顶到机械限位(参考项目曾因此锁死电机保护、需重启服务)，所以留余量。
+r1a7_gripper_min: 0.0
+r1a7_gripper_max: 5.0
+r1a7_gripper_kp: 5.0
+r1a7_gripper_kd: 0.05
+# Gripper travel in motor units per second. Applied as a command-side ramp
+# against wall-clock time, so open/close speed is independent of the inference
+# control loop rate.
+r1a7_gripper_speed: 9.0
+# 2.0 rad/s 对齐参考 R1A7LowCmdConfig(max_joint_delta=0.04 @ control_dt=0.02)。
+r1a7_arm_velocity_limit: 2.0
+# 接管 rt/lowcmd 前先释放机器人自带控制器(对齐参考 release_motion_mode)。
+r1a7_release_motion_mode: true
+# PD 增益对齐参考 r1_a7_real.py REAL_JOINTS / WAIST_JOINT 实测值。
+r1a7_kp_arm: 100.0              # 肩 pitch/roll
+r1a7_kd_arm: 2.0
+r1a7_kp_medium: 100.0           # 肩 yaw / 肘
+r1a7_kd_medium: 2.0
+r1a7_kp_wrist: 50.0             # 腕 roll/pitch/yaw
+r1a7_kd_wrist: 2.0
+r1a7_kp_head: 50.0              # 头 pitch（参考 kp=50 kd=2）
+r1a7_kd_head: 2.0
+r1a7_kp_head_yaw: 10.0          # 头 yaw 单独更软（参考 kp=10 kd=0.1）
+r1a7_kd_head_yaw: 0.1
+r1a7_kp_waist: 50.0             # 腰 yaw（参考 WAIST_JOINT kp=50 kd=3）
+r1a7_kd_waist: 3.0
+r1a7_kp_lock: 200.0
+r1a7_kd_lock: 3.0
+
+# URDF 夹爪关节行程 0..0.0245m（本模型 0=闭合, 0.0245=张开）。
+# 扣扳机=闭合→关节到 gripper_closed_position(0.0)，松开=张开→0.0245。
+gripper_open_position: 0.0245
+gripper_closed_position: 0.0
+
+# 腰yaw 固定的初始位置；由全身 IK 驱动。
+reset_joint_positions:
+  waist_yaw_joint: 0.0
+  left_shoulder_pitch_joint: 0.3
+  left_shoulder_roll_joint: 0.2
+  left_shoulder_yaw_joint: 0.0
+  left_elbow_joint: -0.3
+  left_wrist_roll_joint: 0.0
+  left_wrist_pitch_joint: 0.0
+  left_wrist_yaw_joint: 0.0
+  right_shoulder_pitch_joint: 0.3
+  right_shoulder_roll_joint: -0.2
+  right_shoulder_yaw_joint: 0.0
+  right_elbow_joint: -0.3
+  right_wrist_roll_joint: 0.0
+  right_wrist_pitch_joint: 0.0
+  right_wrist_yaw_joint: 0.0
+  head_pitch_joint: 0.0
+  head_yaw_joint: 0.0
+  left_dex1_1_Joint1_1: 0.0
+  left_dex1_1_Joint2_1: 0.0
+  right_dex1_1_Joint1_1: 0.0
+  right_dex1_1_Joint2_1: 0.0
+
+# Waist yaw joint regularization weight; larger values resist movement by IK.
+body_joint_regularization_weights:
+  waist_yaw_joint: 0.05
+
+controlled_joints:
+  - waist_yaw_joint
+  - left_shoulder_pitch_joint
+  - left_shoulder_roll_joint
+  - left_shoulder_yaw_joint
+  - left_elbow_joint
+  - left_wrist_roll_joint
+  - left_wrist_pitch_joint
+  - left_wrist_yaw_joint
+  - right_shoulder_pitch_joint
+  - right_shoulder_roll_joint
+  - right_shoulder_yaw_joint
+  - right_elbow_joint
+  - right_wrist_roll_joint
+  - right_wrist_pitch_joint
+  - right_wrist_yaw_joint
+  - head_pitch_joint
+  - head_yaw_joint
+  - left_dex1_1_Joint1_1
+  - left_dex1_1_Joint2_1
+  - right_dex1_1_Joint1_1
+  - right_dex1_1_Joint2_1
+
+# Waist yaw participates in whole-body IK.
+body_joints:
+  - waist_yaw_joint
+
+left_arm_joints:
+  - left_shoulder_pitch_joint
+  - left_shoulder_roll_joint
+  - left_shoulder_yaw_joint
+  - left_elbow_joint
+  - left_wrist_roll_joint
+  - left_wrist_pitch_joint
+  - left_wrist_yaw_joint
+right_arm_joints:
+  - right_shoulder_pitch_joint
+  - right_shoulder_roll_joint
+  - right_shoulder_yaw_joint
+  - right_elbow_joint
+  - right_wrist_roll_joint
+  - right_wrist_pitch_joint
+  - right_wrist_yaw_joint
+
+left_gripper_joints:
+  - left_dex1_1_Joint1_1
+  - left_dex1_1_Joint2_1
+right_gripper_joints:
+  - right_dex1_1_Joint1_1
+  - right_dex1_1_Joint2_1
+
+# 激活任一策略动作 后记录当前头显姿态作为零点，后续相对 yaw/pitch 控制头部。
+head_joints:
+  - head_yaw_joint
+  - head_pitch_joint
+head_yaw_joint: head_yaw_joint
+head_pitch_joint: head_pitch_joint
+head_yaw_scale: 1.0
+head_pitch_scale: 1.0
+head_joint_limits:
+  head_yaw_joint: [-2.0071, 2.0071]
+  head_pitch_joint: [-0.62832, 0.62832]
+
+# base_cmd = [vx=0, 0, vyaw=0] + [waist_yaw_joint]；A7 无底盘/升降，vx/vyaw 不下发。
+base_cmd_joints:
+  - waist_yaw_joint
+
+left_ee_body: left_wrist_yaw_link
+right_ee_body: right_wrist_yaw_link
+
+image_server_host: 127.0.0.1         # Set to the reachable image_server address.
+image_server_port: 5555
+camera_start_timeout: 10.0

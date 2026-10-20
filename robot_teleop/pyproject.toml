@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "r1a7-gpt6"
+version = "0.1.0"
+description = "RoboICL GPT-6 Astra live control for Unitree R1-A7"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy>=1.26,<2",
+  "PyYAML>=6",
+  "scipy>=1.11",
+  "placo>=0.9.25",
+  "tyro>=0.8",
+]
+
+[project.optional-dependencies]
+hardware = ["unitree-sdk2py"]
+inference = ["pyzmq>=25", "opencv-python-headless>=4.8"]
+ui = ["PySide6"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -1,0 +1,32 @@
+# Shared GPT-6 live inference defaults. Robot-specific files override these.
+fps: 50
+ik_dt: 0.02
+# One solve per frame, matching the reference stack: iterating further pulls the
+# posture apart when the target is out of reach.
+ik_iters: 1
+activation_grip_threshold: 0.9
+# Controller translation clamp. Truncates targets outside the reachable
+# workspace so IK does not diverge.
+max_hand_delta: 0.45
+# Per-frame joint change clamp. Bad solutions are clipped, and clearly
+# divergent ones are rolled back.
+max_joint_step: 0.12
+# Interpolation time to reset_joint_positions during an explicit pose reset.
+reset_duration: 0.5
+# Soft pull toward the reset posture for every controlled joint. Larger values
+# keep the robot closer to its neutral configuration.
+placo_regularization_weight: 0.01
+# Default reset-posture weight for body joints; per-joint overrides live in the
+# robot files under body_joint_regularization_weights.
+body_regularization_weight: 0.01
+
+lz_height_scale: 0.5
+
+# Visualize the wheeled base as a floating base, integrated at fps * v.
+# Fixed-base robots set this to false in their own config.
+floating_base: true
+publish_topic: rt/whole_body_sdk
+
+# URDF gripper joint range shared by the Dex1 models.
+gripper_open_position: 0.0
+gripper_closed_position: 0.0245

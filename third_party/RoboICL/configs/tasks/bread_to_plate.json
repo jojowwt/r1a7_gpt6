@@ -1,0 +1,25 @@
+{
+  "harness_overrides": {
+    "max_rotation_rad": 0.15
+  },
+  "official_task_documentation": {
+    "version": "r1a7-real-2026-10-09",
+    "source": "unitree_robot_teleop/data/icl_test (R1-A7 real-robot teleoperation)",
+    "description": "Pick up the yellow bread and place it on the blue plate",
+    "comment": "Real R1-A7 upper body, not a RoboDojo simulation task. The head is pinned (pitch 0.25 rad, yaw 0) so the head camera viewpoint is constant. The demonstrations use the right arm to pick and place; the left gripper stays open throughout. Success is judged by the operator, not by an automatic evaluator.",
+    "scoring": [
+      {
+        "score": "0",
+        "condition": "The bread is not lifted."
+      },
+      {
+        "score": "50",
+        "condition": "The bread is lifted clear of the table but does not end up on the blue plate."
+      },
+      {
+        "score": "100",
+        "condition": "The bread rests on the blue plate and the gripper has released it."
+      }
+    ]
+  }
+}

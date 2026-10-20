@@ -1,0 +1,14 @@
+numpy>=1.26,<2
+Pillow>=10
+PyYAML>=6
+scipy>=1.11
+opencv-python-headless>=4.8
+pyzmq>=25
+placo>=0.9.25
+tyro>=0.8
+websockets>=14
+msgpack>=1.0.8
+msgpack-numpy>=0.4.8
+pydantic>=2.5
+h5py>=3.8
+requests>=2.32,<3

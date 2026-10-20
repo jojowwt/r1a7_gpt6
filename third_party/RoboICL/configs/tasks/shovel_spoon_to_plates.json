@@ -1,0 +1,35 @@
+{
+  "harness_overrides": {
+    "max_translation_m": 0.05,
+    "max_rotation_rad": 0.20
+  },
+  "localized_task_prompt_zh": "任务：使用双臂把铲子放入机器人视角左侧的红色盘子，把勺子放入机器人视角右侧的蓝色盘子。左右方向以机器人自身和头部相机视角为准。先观察三路相机确认物体、夹爪与盘子的位置，再分阶段接近、抓取、抬起、移动和释放；不要交叉双臂，保持肘部朝上并留出关节余量。空旷区域可使用较大的平移步幅（每步约 8–15 毫米），接近物体、抓取或放置时缩小到约 2–5 毫米；若观测不确定，先小步移动并重新观察。夹爪开度为 0=闭合、1=张开；拿稳物体前保持闭合，只有确认物体位于正确盘子上方或盘内时才张开。根据每次执行后的图像和状态继续规划，直到两件物体都已正确放入盘中并释放。请用中文填写简短的 execution_note。",
+  "official_task_documentation": {
+    "version": "r1a7-real-2026-10-14",
+    "source": "unitree_robot_teleop/data/GPT6_DEMO_1 (R1-A7 real-robot teleoperation)",
+    "description": "Put the shovel in the red plate on the left, and put the spoon in the blue plate on the right.",
+    "comment": "Real R1-A7 upper body, not a RoboDojo simulation task. Both arms are used: the demonstrations place the shovel with one arm and the spoon with the other, and both grippers open and close. Left and right are stated from the robot's own point of view, which is also the head camera's -- in the recorded images the red plate is on the left of the frame and the blue plate on the right. The head was not pinned during these demonstrations, so the head camera viewpoint shifts by up to about 50 pixels within an episode; the per-frame extrinsics track it exactly. Success is judged by the operator, not by an automatic evaluator.",
+    "scoring": [
+      {
+        "score": "0",
+        "condition": "Neither the shovel nor the spoon is lifted."
+      },
+      {
+        "score": "25",
+        "condition": "At least one object is lifted clear of the table but neither ends up in its plate."
+      },
+      {
+        "score": "50",
+        "condition": "Exactly one object rests in its correct plate and the gripper has released it."
+      },
+      {
+        "score": "75",
+        "condition": "Both objects are in plates and released, but one is in the wrong plate."
+      },
+      {
+        "score": "100",
+        "condition": "The shovel rests in the red plate, the spoon rests in the blue plate, and both grippers have released."
+      }
+    ]
+  }
+}

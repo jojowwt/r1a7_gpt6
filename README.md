@@ -88,7 +88,7 @@ export ASTRA_API_KEY='YOUR_API_KEY'
 
 ### 来源与许可证
 
-本项目保留了 GPT-6 真机推理所需的 R1-A7 DDS 控制、IK、相机接入和运行监视代码；VR 遥操作及示教数据录制功能不属于本仓库发布内容。项目结构参考了 [Ticotico410/r1a7_gpt6_control](https://github.com/Ticotico410/r1a7_gpt6_control)，RoboICL GPT-6 Astra 策略和必要的 XPolicyLab 图像工具位于 `third_party/RoboICL/`。各组件来源、版本及许可证见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。顶层 MIT 许可只适用于本项目自有代码，不覆盖第三方文件、Unitree 机器人模型或商标。
+本项目保留了 GPT-6 真机推理所需的 R1-A7 DDS 控制、IK、相机接入和运行监视代码；VR 遥操作及示教数据录制功能不属于本仓库发布内容。RoboICL GPT-6 Astra 策略和必要的 XPolicyLab 图像工具位于 `third_party/RoboICL/`。各组件来源、版本及许可证见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。顶层 MIT 许可只适用于本项目自有代码，不覆盖第三方文件、Unitree 机器人模型或商标。
 
 ## English
 
@@ -165,4 +165,4 @@ This program takes control of the R1-A7 and publishes arm and gripper commands o
 
 ### Provenance and licenses
 
-The repository retains only the R1-A7 control, IK, camera input, and monitoring code needed for inference. VR teleoperation and demonstration capture are excluded. Project structure was informed by [Ticotico410/r1a7_gpt6_control](https://github.com/Ticotico410/r1a7_gpt6_control); no files from that repository are redistributed. RoboICL and the required XPolicyLab image utilities are retained under `third_party/RoboICL/` with their upstream notices. The top-level MIT license applies only to original project code and does not relicense third-party files, Unitree robot assets, or trademarks.
+The repository retains only the R1-A7 control, IK, camera input, and monitoring code needed for inference. VR teleoperation and demonstration capture are excluded. RoboICL and the required XPolicyLab image utilities are retained under `third_party/RoboICL/` with their upstream notices. The top-level MIT license applies only to original project code and does not relicense third-party files, Unitree robot assets, or trademarks.

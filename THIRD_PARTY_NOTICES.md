@@ -4,7 +4,6 @@ This project contains or is derived from third-party software and robot assets. 
 
 | Component | Source | License / note |
 |---|---|---|
-| Project structure reference | [Ticotico410/r1a7_gpt6_control](https://github.com/Ticotico410/r1a7_gpt6_control) | Consulted as a project-level reference; no source files are redistributed from it. The GitHub repository does not publish a license file. |
 | RoboICL policy and selected configs | [Mosi-AI/RoboICL](https://github.com/Mosi-AI/RoboICL) | MIT; see `third_party/RoboICL/LICENSE` |
 | XPolicyLab image utilities | [XPolicyLab/XPolicyLab](https://github.com/XPolicyLab/XPolicyLab) | Upstream license copied to `third_party/RoboICL/third_party/XPolicyLab/LICENSE` |
 | RoboDojo IK continuity guard | [Mosi-AI/RoboDojo](https://github.com/Mosi-AI/RoboDojo) | MIT; see `third_party/RoboICL/third_party/RoboDojo/LICENSE` |

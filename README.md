@@ -37,6 +37,29 @@
 
 真机开始前应确认 DDS 网络接口、相机服务、设备标定和机器人状态，并确保工作空间无人且急停可立即触达。初次运行应由操作员现场监督。
 
+## 运行前提
+
+- Ubuntu/Linux 主机与 Unitree R1-A7 + Dex1，且主机到机器人的 Unitree DDS 网络已连通。
+- 已启动 `image_server` 并提供头部及左右腕部相机画面。
+- 已为当前设备准备头部相机标定文件：`robot_teleop/config/camera_calibration.yaml`。标定文件和标定工具不随本仓库发布。
+- Python 3.10+、Placo、Unitree SDK2 Python，以及图像传输和 DDS 所需系统依赖。
+- GPT-6 Astra 真机推理需要服务端认可的 `ASTRA_API_KEY`。
+
+## 安装
+
+```bash
+git clone https://github.com/jojowwt/r1a7_gpt6.git
+cd r1a7_gpt6
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+python -m pip install -r third_party/RoboICL/setup/requirements-policy.txt
+python -m pip install -e robot_teleop
+```
+
+请根据所用 Unitree SDK2 部署版本安装 `unitree-sdk2py`。Qt 控制台需要安装 `PySide6`；未安装时可使用 `--ui cv` 或 `--ui none`。
+
 ## 代码结构
 
 | 路径 | 说明 |
@@ -74,29 +97,6 @@ export ASTRA_API_KEY='YOUR_API_KEY'
 ## 验证
 
 完成依赖和设备配置后，须在现场监督下验证相机输入、DDS 状态与机器人动作。`--dry-run` 会执行参考包中的动作，不应用于无运动测试。任务完成由操作员根据动作后的实时画面判定，本仓库不提供自动任务成功评分。
-
-## 运行前提
-
-- Ubuntu/Linux 主机与 Unitree R1-A7 + Dex1，且主机到机器人的 Unitree DDS 网络已连通。
-- 已启动 `image_server` 并提供头部及左右腕部相机画面。
-- 已为当前设备准备头部相机标定文件：`robot_teleop/config/camera_calibration.yaml`。标定文件和标定工具不随本仓库发布。
-- Python 3.10+、Placo、Unitree SDK2 Python，以及图像传输和 DDS 所需系统依赖。
-- GPT-6 Astra 真机推理需要服务端认可的 `ASTRA_API_KEY`。
-
-## 安装
-
-```bash
-git clone https://github.com/jojowwt/r1a7_gpt6.git
-cd r1a7_gpt6
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-python -m pip install -r third_party/RoboICL/setup/requirements-policy.txt
-python -m pip install -e robot_teleop
-```
-
-请根据所用 Unitree SDK2 部署版本安装 `unitree-sdk2py`。Qt 控制台需要安装 `PySide6`；未安装时可使用 `--ui cv` 或 `--ui none`。
 
 ## 安全说明
 

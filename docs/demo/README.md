@@ -1,10 +1,10 @@
-# Demo Video
+# 演示视频
 
-This directory is reserved for the public R1-A7 GPT-6 demo.
+此目录用于存放 Unitree R1-A7 GPT-6 项目的公开演示素材。
 
-Suggested files:
+- `demo.mp4`：完整分辨率的演示视频。
+- `demo.gif`：用于仓库首页预览的短动图。
 
-- `demo.mp4`: full-resolution H.264 video.
-- `demo.gif`: short preview used by the repository README.
+视频文件默认被 `.gitignore` 排除。准备发布时，可将对应文件加入 Git 跟踪，并在根目录 `README.md` 中更新预览链接。
 
-Before publishing, confirm that the video contains no credentials, private network details, calibration overlays, or identifiable bystanders. The `.gitignore` excludes video files until they are intentionally added for release.
+发布前请检查视频，确认其中不包含 API 密钥、私有网络信息、未公开的标定数据或可识别的旁观者。

@@ -1,34 +1,50 @@
-# Unitree R1-A7 GPT-6 Control
+# Unitree R1-A7 GPT-6 控制
 
-[中文](#中文) | [English](#english)
+基于 [RoboICL](https://github.com/Mosi-AI/RoboICL) 的 GPT-6 Astra 视觉上下文学习策略，为 Unitree R1-A7 + Dex1 提供真机推理控制。策略读取头部与左右腕部相机画面及机器人状态，生成双臂末端动作；本地控制层负责逆运动学（IK）、动作连续性检查和 DDS 指令发布。
 
-## 中文
+本仓库保留 GPT-6 推理所需的控制、相机输入和运行监视代码，不包含 VR 遥操作、示教采集工具、模型权重或 RoboICL 仿真训练环境。示教参考数据需在仓库外准备。
 
-本项目把 [RoboICL](https://github.com/Mosi-AI/RoboICL) 的 GPT-6 Astra 视觉上下文学习策略接到 Unitree R1-A7 + Dex1 真机控制栈，作为独立项目发布。策略使用头部及左右腕部相机与机器人状态生成双臂末端动作；本地控制器负责 IK、动作连续性检查和 DDS 下发。仓库只包含推理执行所需代码，不包含 VR 遥操作、示教采集工具、RoboICL 仿真训练环境或模型 checkpoint。已有示教数据需在仓库外准备为 RoboICL reference bundle。
+[演示视频](#演示) · [安装](#安装) · [运行](#运行) · [安全说明](#安全说明) · [项目结构](#项目结构)
 
-### Demo
+## 演示
 
-<!-- 将 demo.mp4 放入 docs/demo/；也可放置 GIF 并取消下一行注释。 -->
+<!-- 将演示文件放入 docs/demo/ 后，替换为对应文件名。 -->
 
-**Demo video will be added here.**
+**演示视频即将添加。**
 
-<!-- ![R1-A7 GPT-6 demo](docs/demo/demo.gif) -->
+<!-- ![R1-A7 GPT-6 控制演示](docs/demo/demo.gif) -->
 
-[Demo 视频目录](docs/demo/README.md)
+视频文件说明见 [docs/demo](docs/demo/README.md)。
 
-### 运行前提
+## 系统架构
 
-- Ubuntu/Linux 主机、Unitree R1-A7 + Dex1，机器人与主机的 Unitree DDS 网络已连通。
-- 已部署并启动四路图像 `image_server`，包含 head、left wrist、right wrist 等所需相机画面。
-- 推理入口只订阅相机画面，不启动相机采集或示教录制流程。
-- 已完成头部相机标定。标定文件属于设备相关数据，不随仓库发布；默认读取 `robot_teleop/config/camera_calibration.yaml`。
-- Python 3.10+；Placo、Unitree SDK2 Python、图像服务和 DDS 所需系统依赖。
-- 调用 GPT-6 Astra 时需配置服务端认可的 `ASTRA_API_KEY`。
+```mermaid
+flowchart LR
+    C[头部与腕部相机] --> I[图像服务]
+    I --> P[GPT-6 Astra / RoboICL 策略]
+    S[R1-A7 机器人状态] --> P
+    P --> A[末端动作]
+    A --> G[动作校验与连续性保护]
+    G --> K[Placo 逆运动学]
+    K --> D[Unitree DDS 控制]
+    D --> R[R1-A7 + Dex1]
+    R --> S
+```
 
-### 安装
+推理入口直接在本地进程运行 RoboICL 策略。相机由外部 `image_server` 提供；控制端执行 IK 和安全约束后，通过 DDS 向机器人发布命令。
+
+## 运行前提
+
+- Ubuntu/Linux 主机与 Unitree R1-A7 + Dex1，且主机到机器人的 Unitree DDS 网络已连通。
+- 已启动 `image_server` 并提供头部及左右腕部相机画面。
+- 已为当前设备准备头部相机标定文件：`robot_teleop/config/camera_calibration.yaml`。标定文件不随仓库发布，标定工具也不包含在本项目中。
+- Python 3.10+、Placo、Unitree SDK2 Python，以及图像传输和 DDS 所需系统依赖。
+- 实际 GPT-6 Astra 推理需要服务端认可的 `ASTRA_API_KEY`。
+
+## 安装
 
 ```bash
-git clone <YOUR_GITHUB_URL>/r1a7_gpt6.git
+git clone https://github.com/jojowwt/r1a7_gpt6.git
 cd r1a7_gpt6
 python3 -m venv .venv
 source .venv/bin/activate
@@ -38,17 +54,17 @@ python -m pip install -r third_party/RoboICL/setup/requirements-policy.txt
 python -m pip install -e robot_teleop
 ```
 
-`unitree-sdk2py` 的安装方式依赖 Unitree SDK2 部署环境，请按对应版本文档安装。Qt 控制台需要 `PySide6`；若不安装，可运行时选择 `--ui cv` 或 `--ui none`。
+请根据所用 Unitree SDK2 部署版本安装 `unitree-sdk2py`。Qt 控制台需要安装 `PySide6`；未安装时可使用 `--ui cv` 或 `--ui none`。
 
-### 使用
+## 运行
 
-先检查命令行参数：
+查看全部命令行选项：
 
 ```bash
 ./scripts/run_r1a7_gpt6.sh --help
 ```
 
-先进行 dry-run。dry-run 不请求模型，但仍会初始化真机通信并发布控制指令；执行前确保机器人处于可控调试状态、工作空间清空且急停可用：
+先用 `--dry-run` 检查相机、IK 和控制链路。该模式不调用模型，但仍会初始化真机通信并发布机器人控制指令。操作前确认机器人处于可控调试状态、工作空间无人且急停可立即触达：
 
 ```bash
 ./scripts/run_r1a7_gpt6.sh \
@@ -58,7 +74,7 @@ python -m pip install -e robot_teleop
   --ui cv
 ```
 
-确认配置、图像、IK 和运行状态后，再配置 API key 并选择任务。真实模型运行示例：
+检查配置与运行状态后，设置 API 密钥并启动模型推理：
 
 ```bash
 export ASTRA_API_KEY='YOUR_API_KEY'
@@ -69,100 +85,27 @@ export ASTRA_API_KEY='YOUR_API_KEY'
   --reference /path/to/train_reference_bundle.json
 ```
 
-`--reference` 可省略以进行 zero-shot rollout。one-shot bundle 必须与当前任务指令和本地数据完整性校验要求匹配。API key 只从环境变量读取，不要写入配置、脚本或提交到 Git。
+省略 `--reference` 可运行 zero-shot rollout。使用 one-shot 示教参考时，参考包中的任务指令必须与当前任务配置完全一致，并通过本地数据完整性检查。API 密钥只从环境变量读取，不要写入配置或提交到 Git。
 
-### 真机安全
+## 安全说明
 
-该程序会接管 R1-A7 控制并通过 DDS 下发机械臂及夹爪命令。每次真机运行前，操作员必须确认机器人处于正确的调试/控制模式，周围无人且无障碍物，急停可立即触达，并核对网络接口、机器人型号、URDF、相机流和标定。首次部署只允许操作员现场监督下做小范围验证。不要将 dry-run 误认为无运动测试：它绕过模型 API，但机器人控制循环仍会运行。程序不会替操作员判断外部碰撞或人员安全。
+程序会接管 R1-A7 控制并经 DDS 发布机械臂及夹爪命令。每次运行前，操作员都必须确认机器人控制模式、周边环境、急停可达性、网络接口、机器人模型、URDF、相机流和标定正确。初次部署须由操作员现场监督，并从小范围动作开始。
 
-### 目录
+`--dry-run` 只跳过模型请求，不代表机器人静止或处于无运动测试状态。软件无法判断外部人员或障碍物是否进入机器人工作空间。
 
-| 路径 | 内容 |
+## 项目结构
+
+| 路径 | 说明 |
 |---|---|
-| `robot_teleop/run_roboicl_live.py` | GPT-6 Astra 真机 rollout 入口 |
-| `robot_teleop/src/robot_teleop/` | R1-A7 环境、相机、IK、DDS publisher 与运行监视器 |
-| `robot_teleop/config/` | 默认控制参数；设备地址和标定需本地配置 |
+| `robot_teleop/run_roboicl_live.py` | GPT-6 Astra 真机推理入口 |
+| `robot_teleop/src/robot_teleop/` | R1-A7 环境、相机接入、IK、DDS 发布和运行监视 |
+| `robot_teleop/config/` | R1-A7 控制参数；相机标定需按设备单独配置 |
 | `assets/r1_a7/` | R1-A7 URDF 与网格模型 |
-| `third_party/RoboICL/` | 运行策略所需 RoboICL 源码与配置子集 |
-| `docs/demo/` | 项目演示视频占位 |
+| `third_party/RoboICL/` | 推理所需 RoboICL 策略、配置及依赖源码 |
+| `scripts/run_r1a7_gpt6.sh` | 推理启动脚本 |
+| `docs/demo/` | 演示视频说明与资源目录 |
+| `THIRD_PARTY_NOTICES.md` | 第三方组件来源及许可证说明 |
 
-### 来源与许可证
+## 来源与许可证
 
-本项目保留了 GPT-6 真机推理所需的 R1-A7 DDS 控制、IK、相机接入和运行监视代码；VR 遥操作及示教数据录制功能不属于本仓库发布内容。RoboICL GPT-6 Astra 策略和必要的 XPolicyLab 图像工具位于 `third_party/RoboICL/`。各组件来源、版本及许可证见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。顶层 MIT 许可只适用于本项目自有代码，不覆盖第三方文件、Unitree 机器人模型或商标。
-
-## English
-
-This standalone project connects the GPT-6 Astra visual in-context policy from [RoboICL](https://github.com/Mosi-AI/RoboICL) to the Unitree R1-A7 + Dex1 hardware control stack. The policy receives head and wrist camera images plus robot state and proposes dual-arm end-effector actions. Local code performs IK, action-continuity checks, and DDS publishing. This repository contains only the inference execution stack; it excludes VR teleoperation, demonstration capture, RoboICL's simulator training environment, and model checkpoints. Prepare demonstration reference bundles outside this repository.
-
-### Demo
-
-<!-- Add demo.mp4 under docs/demo/. A GIF preview can be added below. -->
-
-**Demo video will be added here.**
-
-<!-- ![R1-A7 GPT-6 demo](docs/demo/demo.gif) -->
-
-See [the demo directory](docs/demo/README.md).
-
-### Requirements
-
-- An Ubuntu/Linux host and Unitree R1-A7 + Dex1 with a working Unitree DDS network.
-- A running four-camera `image_server` with the required head and wrist views.
-- The inference runner subscribes to camera frames; it does not capture demonstrations.
-- A device-specific head-camera calibration at `robot_teleop/config/camera_calibration.yaml` (not included).
-- Python 3.10+ and the system dependencies required by Placo, Unitree SDK2 Python, image transport, and DDS.
-- `ASTRA_API_KEY` for live GPT-6 Astra requests.
-
-### Install
-
-```bash
-git clone <YOUR_GITHUB_URL>/r1a7_gpt6.git
-cd r1a7_gpt6
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-python -m pip install -r third_party/RoboICL/setup/requirements-policy.txt
-python -m pip install -e robot_teleop
-```
-
-Install `unitree-sdk2py` using the instructions for your Unitree SDK2 deployment. The Qt console requires `PySide6`; use `--ui cv` or `--ui none` without it.
-
-### Run
-
-Inspect the command-line options:
-
-```bash
-./scripts/run_r1a7_gpt6.sh --help
-```
-
-Start with dry-run. It skips model requests but still initializes hardware communication and publishes robot commands. Ensure the robot is in its supported debug mode, the workspace is clear, and the emergency stop is reachable:
-
-```bash
-./scripts/run_r1a7_gpt6.sh \
-  --task bread_to_plate \
-  --net enp5s0 \
-  --dry-run \
-  --ui cv
-```
-
-After checking the configuration, cameras, IK, and runtime state, set the API key and launch a real model rollout:
-
-```bash
-export ASTRA_API_KEY='YOUR_API_KEY'
-./scripts/run_r1a7_gpt6.sh \
-  --task bread_to_plate \
-  --net enp5s0 \
-  --ui qt \
-  --reference /path/to/train_reference_bundle.json
-```
-
-Omit `--reference` for zero-shot rollout. A one-shot bundle must match the task instruction and pass the local data-integrity checks. Keep credentials in environment variables; never commit them to config or scripts.
-
-### Hardware safety
-
-This program takes control of the R1-A7 and publishes arm and gripper commands over DDS. Before each run, the operator must confirm the supported robot mode, an empty workspace, immediate access to the emergency stop, and the network interface, robot model, URDF, camera streams, and calibration. Supervise initial hardware tests in person and begin with small movements. Dry-run bypasses model requests only; the robot control loop still runs. The software does not guarantee clearance from people or external obstacles.
-
-### Provenance and licenses
-
-The repository retains only the R1-A7 control, IK, camera input, and monitoring code needed for inference. VR teleoperation and demonstration capture are excluded. RoboICL and the required XPolicyLab image utilities are retained under `third_party/RoboICL/` with their upstream notices. The top-level MIT license applies only to original project code and does not relicense third-party files, Unitree robot assets, or trademarks.
+项目保留 GPT-6 真机推理所需的 R1-A7 DDS 控制、IK、相机接入及运行监视代码；VR 遥操作和示教采集功能不在本仓库中。RoboICL 策略及必要的 XPolicyLab 图像工具位于 `third_party/RoboICL/`。第三方组件的来源和许可证见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。根目录 MIT 许可证仅适用于本项目原创代码，不覆盖第三方文件、Unitree 机器人模型或商标。

@@ -8,13 +8,11 @@
 
 ## 演示
 
-<!-- 将演示文件放入 docs/demo/ 后，替换为对应文件名。 -->
+点击下面的预览图播放完整演示视频：
 
-**演示视频即将添加。**
+[![R1-A7 GPT-6 控制演示](docs/demo/demo.gif)](docs/demo/demo.mp4)
 
-<!-- ![R1-A7 GPT-6 控制演示](docs/demo/demo.gif) -->
-
-视频文件说明见 [docs/demo](docs/demo/README.md)。
+视频时长约 23 秒，展示 R1-A7 双臂将铲子和勺子放入对应盘子的推理控制过程。视频文件说明见 [docs/demo](docs/demo/README.md)。
 
 ## 系统架构
 

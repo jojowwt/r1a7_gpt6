@@ -19,3 +19,5 @@ robot_teleop/config/*calibration*.yaml
 *.h5
 *.mp4
 *.gif
+!docs/demo/demo.mp4
+!docs/demo/demo.gif
